@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "crud/api/server"
 
 func main() {
-	fmt.Println("Holi Lady")
+	server.InitDB()
 }
