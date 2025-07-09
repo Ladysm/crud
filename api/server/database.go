@@ -7,12 +7,14 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql" // 💡 IMPORTANTE: sin esto, no se registra el driver
 	"github.com/joho/godotenv"
 )
 
-func InitDB() *sql.DB {
+// func InitDB() *sql.DB {
+func InitDB() {
 	//aqui cargo las variable de entorno
-	err := godotenv.Load()
+	err := godotenv.Load("api/env/.env")
 	if err != nil {
 		log.Fatal("error al cargar archivo .env")
 	}
