@@ -51,3 +51,9 @@ func GetBooks(c *gin.Context, db *sql.DB) {
 	}
 	c.JSON(http.StatusOK, books)
 }
+func CreateBook( c *gin.Context, db *sql.DB){
+	var newBook
+	if err := c.ShouldBindBodyWithJSON(&newBook); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error":"Json invalido"})
+	}
+}
