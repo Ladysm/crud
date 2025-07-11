@@ -7,12 +7,12 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql" // 💡 IMPORTANTE: sin esto, no se registra el driver
+	_ "github.com/go-sql-driver/mysql" //  IMPORTANTE: sin esto, no se registra el driver
 	"github.com/joho/godotenv"
 )
 
-// func InitDB() *sql.DB {
-func InitDB() {
+func InitDB() *sql.DB {
+
 	//aqui cargo las variable de entorno
 	err := godotenv.Load("api/env/.env")
 	if err != nil {
@@ -37,5 +37,5 @@ func InitDB() {
 		log.Fatal("ping fallo ", err)
 	}
 	fmt.Println("conexión exitosa")
-	// return db
+	return db
 }

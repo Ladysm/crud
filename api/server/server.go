@@ -1,17 +1,23 @@
 package server
 
-import "fmt"
+import (
+	"crud/api/router"
+	"database/sql"
+
+	"github.com/gin-gonic/gin"
+)
+
+// encargada de iniciar el servidor web
+func StartServer(db *sql.DB) {
+	//Crea una nueva instancia del motor Gin con configuraciones por defecto
+	r := gin.Default()
+	// se pasa la conexión a las rutas
+	router.InitRoutes(r, db)
+	//arranca el servidor en el puerto 8080
+	r.Run(":8080")
+
+}
 
 // func StartServer() {
-// 	//aqui estoy llamando ala función que genera la conexion a al DB
-// 	db := InitDB()
-// 	r := gin.Default()
-// 	// se pasa la conexión a las rutas
-// 	router.InitRoutes(r, db)
-// 	r.Run(":8080")
-
+// 	fmt.Println("Nada aquí por ahora") // o lo puedes dejar vacío
 // }
-
-func StartServer() {
-	fmt.Println("Nada aquí por ahora") // o lo puedes dejar vacío
-}
