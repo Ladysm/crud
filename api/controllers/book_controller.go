@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"crud/api/validators"
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -51,9 +53,71 @@ func GetBooks(c *gin.Context, db *sql.DB) {
 	}
 	c.JSON(http.StatusOK, books)
 }
-func CreateBook( c *gin.Context, db *sql.DB){
-	var newBook
-	if err := c.ShouldBindBodyWithJSON(&newBook); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error":"Json invalido"})
+
+func CreateBook(c *gin.Context, db *sql.DB) {
+	//se crea la variable y luego se asocia el objeto, esto es para guardar los datos del input body
+	var newBook Book
+	//ShouldBindJSON  se usa para guardar el input recibido en el body(input)
+	// si el json tiene campos faltante so inválidos, se guardan en err
+	if err := c.ShouldBindJSON(&newBook); err != nil {
+		// si hay error se devuelve status code 400
+		//400 (Bad Request) c
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Json invalido"})
+
 	}
+
+	// se valida los campos del input
+	if !validators.IsValidGenre(newBook.Genre) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "genre invalid"})
+
+	}
+	// validador de language
+	if validators.IsValidLanguage(newBook.Language) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "language invalid"})
+
+	}
+	if !validators.IsValidPublishedYear(newBook.PublishedYear) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Año de publicación inválido"})
+		return
+	}
+	if !validators.IsValidPageCount(newBook.PageCount) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Número de páginas inválido"})
+		return
+	}
+	if !validators.IsValidAvailableCopies(newBook.AvailableCopies) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cantidad de copias inválida"})
+		return
+	}
+	if !validators.IsValidISBN(newBook.ISBN) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ISBN inválido"})
+		return
+	}
+	// Se define la consulta SQL pa insertar le libro
+	query := `
+		INSERT INTO books 
+		(title, author, publishedYear, genre, isbn, pageCount, language, availableCopies)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+	`
+	// se ejecuta el insert
+	result, err := db.Exec(query,
+		newBook.Title, newBook.Author, newBook.PublishedYear,
+		newBook.Genre, newBook.ISBN, newBook.PageCount,
+		newBook.Language, newBook.AvailableCopies,
+	)
+	if err != nil {
+		fmt.Println("error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo insertar el libro"})
+		return
+	}
+	// se obtiene el id del registro del libro creado
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener el ID insertado"})
+		return
+	}
+
+	newBook.ID = int(insertedID)
+
+	// se retorna el id del libro y el status code
+	c.JSON(http.StatusCreated, newBook)
 }

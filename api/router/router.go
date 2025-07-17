@@ -16,4 +16,9 @@ func InitRoutes(r *gin.Engine, db *sql.DB) {
 		controllers.GetBooks(c, db)
 	})
 
+	// solicitud para POST
+	r.POST("/books", func(c *gin.Context) {
+		controllers.CreateBook(c, db)
+	})
+
 }
