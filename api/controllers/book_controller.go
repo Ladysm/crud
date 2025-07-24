@@ -3,6 +3,7 @@ package controllers
 import (
 	"crud/api/models"
 	"crud/api/validators"
+	"strings"
 
 	"database/sql"
 	"fmt"
@@ -92,4 +93,37 @@ func CreateBook(c *gin.Context, db *sql.DB) {
 		"code": "ok"})
 }
 
-//
+// metodo patch
+func UpdateBook(c *gin.Context, db *sql.DB) {
+	var updatedBook models.Book
+	// obtenog el id
+	id := c.Param("id")
+	// Decodifica el JSON con los campos que se desean actualizar
+
+	// Decodifica el JSON con los campos que se desean actualizar
+	var updateData map[string]interface{}
+	if err := c.ShouldBindJSON(&updateData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "JSON inválido"})
+		return
+	}
+	if errors := validators.ValidateBook(updatedBook); len(errors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
+		return
+	}
+	// Construye la query dinámica
+	setClauses := []string{}
+	args := []interface{}{}
+	for field, value := range updateData {
+		setClauses = append(setClauses, fmt.Sprintf("%s = ?", field))
+		args = append(args, value)
+	}
+	args = append(args, id)
+	query := fmt.Sprintf("UPDATE books SET %s WHERE id = ?", strings.Join(setClauses, ", "))
+	// Ejecuta la consulta
+	_, err := db.Exec(query, args...)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el libro"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Libro actualizado correctamente"})
+}

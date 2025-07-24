@@ -20,5 +20,8 @@ func InitRoutes(r *gin.Engine, db *sql.DB) {
 	r.POST("/books", func(c *gin.Context) {
 		controllers.CreateBook(c, db)
 	})
-
+	// put
+	r.PATCH("/books/:id", func(c *gin.Context) {
+		controllers.UpdateBook(c, db)
+	})
 }
