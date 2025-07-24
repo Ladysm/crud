@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"crud/api/models"
 	"crud/api/validators"
+
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -11,17 +13,6 @@ import (
 
 // se realiza la estructura del libro con las propiedades que va tener
 // Modelo simple del libro
-type Book struct {
-	ID              int    `json:"id"`
-	Title           string `json:"title"`
-	Author          string `json:"author"`
-	PublishedYear   int    `json:"publishedYear"`
-	Genre           string `json:"genre"`
-	ISBN            string `json:"isbn"`
-	PageCount       int    `json:"pageCount"`
-	Language        string `json:"language"`
-	AvailableCopies int    `json:"availableCopies"`
-}
 
 // se usa el c (objeto de contexto)
 // db *sql.DB la conexión a la base de datos para poder hacer consultas
@@ -37,11 +28,11 @@ func GetBooks(c *gin.Context, db *sql.DB) {
 	// se cierra la coenxión
 	defer rows.Close()
 	// uso el struct, para declarar variable books que es una arreglo dinámico
-	var books []Book
+	var books []models.Book
 	// se itera por cada fila devuelta z la consulta
 	for rows.Next() {
 		//Por cada fila se crea una variable temporal b de tipo Book
-		var b Book
+		var b models.Book
 		// lee la fila actual que viene de la base de datos y asigna cada columna a una variable en Go, si hay error lo devuelve
 		if err := rows.Scan(
 			&b.ID, &b.Title, &b.Author, &b.PublishedYear, &b.Genre, &b.ISBN, &b.PageCount, &b.Language, &b.AvailableCopies,
@@ -56,7 +47,7 @@ func GetBooks(c *gin.Context, db *sql.DB) {
 
 func CreateBook(c *gin.Context, db *sql.DB) {
 	//se crea la variable y luego se asocia el objeto, esto es para guardar los datos del input body
-	var newBook Book
+	var newBook models.Book
 	//ShouldBindJSON  se usa para guardar el input recibido en el body(input)
 	// si el json tiene campos faltante so inválidos, se guardan en err
 	if err := c.ShouldBindJSON(&newBook); err != nil {
@@ -66,30 +57,8 @@ func CreateBook(c *gin.Context, db *sql.DB) {
 
 	}
 
-	// se valida los campos del input
-	if !validators.IsValidGenre(newBook.Genre) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "genre invalid"})
-
-	}
-	// validador de language
-	if validators.IsValidLanguage(newBook.Language) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "language invalid"})
-
-	}
-	if !validators.IsValidPublishedYear(newBook.PublishedYear) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Año de publicación inválido"})
-		return
-	}
-	if !validators.IsValidPageCount(newBook.PageCount) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Número de páginas inválido"})
-		return
-	}
-	if !validators.IsValidAvailableCopies(newBook.AvailableCopies) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Cantidad de copias inválida"})
-		return
-	}
-	if !validators.IsValidISBN(newBook.ISBN) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ISBN inválido"})
+	if errors := validators.ValidateBook(newBook); len(errors) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
 		return
 	}
 	// Se define la consulta SQL pa insertar le libro
@@ -119,5 +88,8 @@ func CreateBook(c *gin.Context, db *sql.DB) {
 	newBook.ID = int(insertedID)
 
 	// se retorna el id del libro y el status code
-	c.JSON(http.StatusCreated, newBook)
+	c.JSON(http.StatusCreated, gin.H{
+		"code": "ok"})
 }
+
+//

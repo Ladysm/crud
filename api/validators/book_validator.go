@@ -1,6 +1,9 @@
 package validators
 
-import "unicode"
+import (
+	"crud/api/models"
+	"unicode"
+)
 
 // validador de género
 func IsValidGenre(genre string) bool {
@@ -44,9 +47,33 @@ func IsValidISBN(isbn string) bool {
 		return false
 	}
 	for _, c := range isbn {
-		if unicode.IsDigit(c) && c != '-' {
+		if !unicode.IsDigit(c) && c != '-' {
 			return false
 		}
 	}
 	return true
+}
+func ValidateBook(b models.Book) []string {
+	var errs []string
+
+	if !IsValidGenre(b.Genre) {
+		errs = append(errs, "género inválido")
+	}
+	if !IsValidLanguage(b.Language) {
+		errs = append(errs, "idioma inválido")
+	}
+	if !IsValidPublishedYear(b.PublishedYear) {
+		errs = append(errs, "año de publicación inválido")
+	}
+	if !IsValidPageCount(b.PageCount) {
+		errs = append(errs, "número de páginas inválido")
+	}
+	if !IsValidAvailableCopies(b.AvailableCopies) {
+		errs = append(errs, "cantidad de copias inválida")
+	}
+	if !IsValidISBN(b.ISBN) {
+		errs = append(errs, "ISBN inválido")
+	}
+
+	return errs
 }
