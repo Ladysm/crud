@@ -93,7 +93,7 @@ func CreateBook(c *gin.Context, db *sql.DB) {
 		"code": "ok"})
 }
 
-// metodo patch
+// metodo put
 func UpdateBook(c *gin.Context, db *sql.DB) {
 	var updatedBook models.Book
 	// obtenog el id
