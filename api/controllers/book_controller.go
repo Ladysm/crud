@@ -17,10 +17,24 @@ import (
 
 // se usa el c (objeto de contexto)
 // db *sql.DB la conexión a la base de datos para poder hacer consultas
+type books struct {
+	db *sql.DB
+}
 
-func GetBooks(c *gin.Context, db *sql.DB) {
+type Handler interface {
+	// nota: solo puede recibir el gin context, nada mas.
+	GetBooks(*gin.Context)
+	CreateBook(*gin.Context)
+	UpdateBook(*gin.Context)
+}
+
+// func New(db *sql.DB) Handler {
+// 	return &books{db: db}
+// }
+
+func (b *books) GetBooks(c *gin.Context) {
 	// consulta SQL
-	rows, err := db.Query("SELECT id, title, author, publishedYear, genre, isbn, pageCount, language, availableCopies FROM books")
+	rows, err := b.db.Query("SELECT id, title, author, publishedYear, genre, isbn, pageCount, language, availableCopies FROM books")
 	//manejo de error
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al consultar los libros"})
@@ -44,8 +58,10 @@ func GetBooks(c *gin.Context, db *sql.DB) {
 		books = append(books, b)
 	}
 	c.JSON(http.StatusOK, books)
+
 }
 
+// NOTA: volver a hacer los mismo de get con Create book y update
 func CreateBook(c *gin.Context, db *sql.DB) {
 	//se crea la variable y luego se asocia el objeto, esto es para guardar los datos del input body
 	var newBook models.Book

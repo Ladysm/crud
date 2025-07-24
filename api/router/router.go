@@ -8,7 +8,8 @@ import (
 )
 
 // r representa el router principal de Gin, es decir, el objeto que maneja todas las solicitudes (post, delete..)
-func InitRoutes(r *gin.Engine, db *sql.DB) {
+func InitRoutes(db *sql.DB) *gin.Engine {
+	r := gin.Default()
 	//r *gin.Engine: el motor de rutas de Gin (tu servidor web)
 	//db *sql.DB:  conexión a la base de datos
 	// cuando se haga una solciitud get a books se va ejecutar una función que llama a los controlers
@@ -24,4 +25,5 @@ func InitRoutes(r *gin.Engine, db *sql.DB) {
 	r.PATCH("/books/:id", func(c *gin.Context) {
 		controllers.UpdateBook(c, db)
 	})
+	return r
 }
